@@ -68,7 +68,9 @@ public class JFileFilter extends javax.swing.filechooser.FileFilter implements j
      */
     public JFileFilter(String description, String extension) {
         this.description = description;
-        this.exts.add(extension);
+        if (!this.exts.add(extension)) {
+            // TODO: check failed this.exts.add()
+        }
     }
 
     /** add an additional extension to the filter
