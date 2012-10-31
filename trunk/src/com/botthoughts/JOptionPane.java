@@ -18,7 +18,7 @@ public class JOptionPane extends javax.swing.JOptionPane {
     private static int result;
 
     public static void showMessageDialog(Component parentComponent, Object message, String title, int messageType) {
-        if (PlatformUtilities.isMac()) {
+        if (PlatformUtilities.isOSX()) {
             javax.swing.JOptionPane.showMessageDialog(parentComponent, message, title, messageType, appIcon);
         } else {
             javax.swing.JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
@@ -26,7 +26,7 @@ public class JOptionPane extends javax.swing.JOptionPane {
     }
 
     public static int showConfirmDialog(Component parentComponent, Object message, String title, int optionType, int messageType) {
-        if (PlatformUtilities.isMac()) {
+        if (PlatformUtilities.isOSX()) {
             result = javax.swing.JOptionPane.showConfirmDialog(parentComponent, message, title, optionType, messageType, appIcon);
         } else {
             result = javax.swing.JOptionPane.showConfirmDialog(parentComponent, message, title, optionType, messageType);
@@ -37,7 +37,7 @@ public class JOptionPane extends javax.swing.JOptionPane {
     public static int showOptionDialog(Component parentComponent, Object message,
                                    String title, int optionType, int messageType,
                                    Icon icon, Object[] options, Object initialValue) {
-        if (PlatformUtilities.isMac()) {
+        if (PlatformUtilities.isOSX()) {
             result = javax.swing.JOptionPane.showOptionDialog(parentComponent, message, title, optionType, messageType, appIcon, options, initialValue);
         } else {
             result = javax.swing.JOptionPane.showOptionDialog(parentComponent, message, title, optionType, messageType, icon, options, initialValue);

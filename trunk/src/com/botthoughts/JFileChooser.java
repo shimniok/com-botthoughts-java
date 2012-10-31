@@ -147,13 +147,13 @@ public class JFileChooser extends javax.swing.JFileChooser {
     public void setFileFilter(JFileFilter ff) {
         this.ff = ff;
         System.out.println("JFileChooser.setFileFilter() -- got JFileFilter");
-        if (!PlatformUtilities.isMac()) {
+        if (!PlatformUtilities.isOSX()) {
             super.setFileFilter(ff);
         }
     }
 
     private void setDialogSelectedFile() {
-        if (PlatformUtilities.isMac()) {
+        if (PlatformUtilities.isOSX()) {
             if (macFileDialog != null && mySelFile != null) {
                 if (mySelFile.isDirectory()) {
                     macFileDialog.setDirectory(mySelFile.getPath());
@@ -200,7 +200,7 @@ public class JFileChooser extends javax.swing.JFileChooser {
     public int showDialog(Component frame, String buttonText) {
         int result;
 
-        if (PlatformUtilities.isMac()) {
+        if (PlatformUtilities.isOSX()) {
             System.out.println("showDialog() -- OSX enter");
             JFrame myFrame = null;
             if (frame instanceof JFrame) {
@@ -231,7 +231,7 @@ public class JFileChooser extends javax.swing.JFileChooser {
     public int showOpenDialog(Component frame) {
         int result;
 
-        if (PlatformUtilities.isMac()) {
+        if (PlatformUtilities.isOSX()) {
             System.out.println("showOpenDialog() -- OSX enter");
             macFileDialog = new FileDialog((JFrame) frame, "Open", FileDialog.LOAD);
             setDialogSelectedFile();
@@ -260,7 +260,7 @@ public class JFileChooser extends javax.swing.JFileChooser {
     public int showSaveDialog(Component frame) {
         int result;
 
-        if (PlatformUtilities.isMac()) {
+        if (PlatformUtilities.isOSX()) {
             macFileDialog = new FileDialog((JFrame) frame, "Save", FileDialog.SAVE);
             macFileDialog.setFilenameFilter(this.ff);
             setDialogSelectedFile();
