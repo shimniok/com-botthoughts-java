@@ -36,15 +36,18 @@ public class UpdateChecker {
     
     private boolean newAvailable(String current) {
         boolean result = false;
-        int[] currentVersionNumber = parseVersion(current);
+        int[] currentVersion = parseVersion(current);
         int[] myVersion = parseVersion(this.version);
 
-        for (int i = 0; i < myVersion.length && i < currentVersionNumber.length; i++) {
-            if (currentVersionNumber[i] > myVersion[i]) {
+        for (int i=0; i < Math.min(currentVersion.length, myVersion.length); i++) {
+            if (myVersion[i] > currentVersion[i]) {
+                break;
+            } else if (myVersion[i] < currentVersion[i]) {
                 result = true;
+                break;
             }
-            //System.out.println(Integer.toString(i)+": "+ Boolean.toString(currentVersionNumber[i] > myVersion[i]));
         }
+
         return result;
     }
     
