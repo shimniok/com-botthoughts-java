@@ -8,8 +8,10 @@ import java.awt.Component;
 import java.awt.FileDialog;
 import java.io.File;
 import java.util.ArrayList;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.jdesktop.application.FrameView;
 
 /** Custom JFileChooser implementation adding a few features
  *
@@ -190,6 +192,37 @@ public class JFileChooser extends javax.swing.JFileChooser {
         return mySelFile;
     }
 
+
+    private int showMacDialog(Component frame, String buttonText, int mode) {
+        int result = CANCEL_OPTION;
+        System.out.println(">>>>> "+frame.getClass().toString());
+        if (frame instanceof JFrame) {
+            JFrame myFrame = (JFrame) frame;
+            macFileDialog = new FileDialog(myFrame, buttonText, mode);
+        } else if (frame instanceof JDialog) {
+            JDialog myDlg = (JDialog) frame;
+            macFileDialog = new FileDialog(myDlg, buttonText, mode);
+        }
+        setDialogSelectedFile();
+        macFileDialog.setFilenameFilter(this.ff);
+        macFileDialog.setVisible(true);
+        if (macFileDialog.getFile() != null) {
+            result = APPROVE_OPTION;
+            mySelFile = new File( macFileDialog.getDirectory(), macFileDialog.getFile());
+        } else {
+            result = CANCEL_OPTION;
+        }
+        return result;
+    }
+
+    public int showMacSaveDialog(Component frame) {
+        return showMacDialog(frame, "Save", FileDialog.SAVE);
+    }
+    
+    public int showMacOpenDialog(Component frame) {
+        return showMacDialog(frame, "open", FileDialog.LOAD);        
+    }
+
     /** displays this as a modal dialog
      *
      * @param frame the parent frame setting location of dialog and modal dependencies
@@ -201,21 +234,8 @@ public class JFileChooser extends javax.swing.JFileChooser {
         int result;
 
         if (PlatformUtilities.isOSX()) {
-            System.out.println("showDialog() -- OSX enter");
-            JFrame myFrame = null;
-            if (frame instanceof JFrame) {
-                myFrame = (JFrame) frame;
-            }
-            macFileDialog = new FileDialog(myFrame, buttonText, FileDialog.SAVE);
-            setDialogSelectedFile();
-            macFileDialog.setFilenameFilter(this.ff);
-            macFileDialog.setVisible(true);
-            if (macFileDialog.getFile() != null) {
-                result = APPROVE_OPTION;
-                mySelFile = new File( macFileDialog.getDirectory(), macFileDialog.getFile());
-            } else {
-                result = CANCEL_OPTION;
-            }
+            // TODO figure out correct default behavior if mode not specified
+            result = showMacDialog(frame, buttonText, FileDialog.SAVE);
         } else {
             result = super.showDialog(frame, buttonText);
         }
@@ -232,17 +252,7 @@ public class JFileChooser extends javax.swing.JFileChooser {
         int result;
 
         if (PlatformUtilities.isOSX()) {
-            System.out.println("showOpenDialog() -- OSX enter");
-            macFileDialog = new FileDialog((JFrame) frame, "Open", FileDialog.LOAD);
-            setDialogSelectedFile();
-            macFileDialog.setFilenameFilter(this.ff);
-            macFileDialog.setVisible(true);
-            if (macFileDialog.getFile() != null) {
-                result = APPROVE_OPTION;
-                mySelFile = new File( macFileDialog.getDirectory(), macFileDialog.getFile());
-            } else {
-                result = CANCEL_OPTION;
-            }
+            result = showMacOpenDialog(frame);
         } else {
             result = super.showOpenDialog(frame);
         }
@@ -261,16 +271,7 @@ public class JFileChooser extends javax.swing.JFileChooser {
         int result;
 
         if (PlatformUtilities.isOSX()) {
-            macFileDialog = new FileDialog((JFrame) frame, "Save", FileDialog.SAVE);
-            macFileDialog.setFilenameFilter(this.ff);
-            setDialogSelectedFile();
-            macFileDialog.setVisible(true);
-            if (macFileDialog.getFile() != null) {
-                result = APPROVE_OPTION;
-                mySelFile = new File( macFileDialog.getDirectory(), macFileDialog.getFile());
-            } else {
-                result = CANCEL_OPTION;
-            }
+            result = showMacSaveDialog(frame);
         } else {
             result = super.showSaveDialog(frame);
         }
