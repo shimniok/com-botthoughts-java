@@ -53,7 +53,7 @@ public class JFileFilter extends javax.swing.filechooser.FileFilter implements j
     /** the filter description */
     protected String description = "";
     /** the list of allowable extensions to filter on */
-    protected ArrayList exts = new ArrayList();
+    protected ArrayList<String> exts = new ArrayList<String>();
 
     /** Create a new JFileFilter instance
      *

@@ -13,7 +13,6 @@ import java.util.Enumeration;
 import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
 
 /**
  *
@@ -26,6 +25,7 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
      */
     public SerialPanel() {
         initComponents();
+        portToggle.setEnabled(false);
         //getPorts();
     }
     
@@ -34,20 +34,18 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
         portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
         if ( portIdentifier.isCurrentlyOwned() ) {
             System.out.println("Error: Port is currently in use");
-        }
-        else {
+        } else {
             //create CommPort and identify available serial/parallel ports
             commPort = portIdentifier.open(this.getClass().getName(),2000);
             serialPort = (SerialPort) commPort;//cast all to serial
             //set baudrate, 8N1 stopbits, no parity
-            serialPort.setSerialPortParams(baudRate,SerialPort.DATABITS_8,SerialPort.STOPBITS_1,SerialPort.PARITY_NONE);
+            serialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             //start I/O streams
             inputStream = serialPort.getInputStream();
             outputStream = serialPort.getOutputStream();
-            open=true;
-            
-            }
+            open=true;        
         }
+    }
     
     private void setBaud() {
         String newbaud = baudBox.getSelectedItem().toString();//get text from user
@@ -56,52 +54,54 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
     }
     
     
+    /**
+     * Gets a list of available serial ports and sticks those in the portBox JComboBox model
+     */
     private void getPorts() {
         Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
-        DefaultComboBoxModel model = (DefaultComboBoxModel) portBox.getModel();
-        model.removeAllElements();
-        model.addElement("Select Port");
+        portBox.removeAllItems();
         while ( portEnum.hasMoreElements() ) {
             portIdentifier = (CommPortIdentifier) portEnum.nextElement();
             if (portIdentifier.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-                model.addElement(portIdentifier.getName());
+                portBox.addItem(portIdentifier.getName());
+                System.out.println(portIdentifier.getName());
             }
         }
     }
     
-    //serial event: when data is received from serial port
-    //display the data on the terminal
+    /**
+     * when data is received from serial port, display the data on the terminal
+     */
     @Override
     public void serialEvent(SerialPortEvent event) {
-        switch(event.getEventType()) {
-            case SerialPortEvent.DATA_AVAILABLE:
-                
-                byte[] buffer = new byte[MAX_DATA];   //create a buffer (enlarge if buffer overflow occurs)
-                int numBytes;   //how many bytes read (smaller than buffer)
-                String s = new String("");
-                
-                try {   //read the input stream and store to buffer, count number of bytes read
-                    while ((numBytes=inputStream.read(buffer)) > 0) {
-                        s += new String(buffer).substring(0,numBytes);
-                        System.out.println("bytes "+Integer.toString(numBytes)+":<"+s+">");
-                    }
-                    myParser.parseData(s);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+        if (event.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
+            byte[] buffer = new byte[MAX_DATA]; // create a buffer (enlarge if buffer overflow occurs)
+            int numBytes;                       // how many bytes read (smaller than buffer)
+            String s = "";
 
-            break;
+//            System.out.println("Serial event: DATA_AVAILABLE");
+            
+            try {
+                numBytes = inputStream.read(buffer);
+                s += new String(buffer).substring(0, numBytes);
+//                System.out.println("<"+buffer[1]+">");
+//                System.out.println("bytes " + Integer.toString(numBytes));
+            } catch (IOException ex) {
+                Logger.getLogger(SerialPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            if (myParser != null) {
+                myParser.parseData(s);
+            }
         }
     }
     
-    public void setHandler( Parser p )
-    {
+    public void setHandler(Parser p) {
         myParser = p;
     }
     
     /* call this from the main JFrame when it is closing, ensures disconnect of serial stuff */
-    public void handleClose()
-    {
+    public void handleClose() {
             //when user closes, make sure to close open ports and open I/O streams
         if (portIdentifier != null && portIdentifier.isCurrentlyOwned()) { 
             try {
@@ -140,18 +140,18 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
         portBox = new javax.swing.JComboBox();
         portToggle = new javax.swing.JButton();
 
-        setMaximumSize(new java.awt.Dimension(275, 55));
-        setMinimumSize(new java.awt.Dimension(275, 55));
+        setMaximumSize(new java.awt.Dimension(400, 25));
+        setMinimumSize(new java.awt.Dimension(400, 25));
         setOpaque(false);
-        setPreferredSize(new java.awt.Dimension(275, 55));
+        setPreferredSize(new java.awt.Dimension(400, 25));
         setLayout(new java.awt.GridBagLayout());
 
         baudBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2400", "4800", "9600", "14400", "19200", "38400", "57600", "115200" }));
         baudBox.setSelectedIndex(7);
-        baudBox.setMaximumSize(new java.awt.Dimension(75, 18));
-        baudBox.setMinimumSize(new java.awt.Dimension(70, 18));
+        baudBox.setMaximumSize(new java.awt.Dimension(90, 25));
+        baudBox.setMinimumSize(new java.awt.Dimension(90, 25));
         baudBox.setNextFocusableComponent(portBox);
-        baudBox.setPreferredSize(new java.awt.Dimension(75, 18));
+        baudBox.setPreferredSize(new java.awt.Dimension(90, 25));
         baudBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 baudBoxActionPerformed(evt);
@@ -164,16 +164,16 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
         add(baudBox, gridBagConstraints);
 
         portBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Select Port" }));
-        portBox.setMaximumSize(new java.awt.Dimension(80, 18));
-        portBox.setMinimumSize(new java.awt.Dimension(80, 18));
-        portBox.setPreferredSize(new java.awt.Dimension(80, 18));
+        portBox.setMaximumSize(new java.awt.Dimension(150, 25));
+        portBox.setMinimumSize(new java.awt.Dimension(150, 25));
+        portBox.setPreferredSize(new java.awt.Dimension(150, 25));
         portBox.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
-            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+                portBoxPopupMenuWillBecomeVisible(evt);
             }
             public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
             }
-            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
-                portBoxPopupMenuWillBecomeVisible(evt);
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
             }
         });
         portBox.addActionListener(new java.awt.event.ActionListener() {
@@ -188,9 +188,9 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
         add(portBox, gridBagConstraints);
 
         portToggle.setText("Connect");
-        portToggle.setMaximumSize(new java.awt.Dimension(73, 20));
-        portToggle.setMinimumSize(new java.awt.Dimension(73, 20));
-        portToggle.setPreferredSize(new java.awt.Dimension(73, 20));
+        portToggle.setMaximumSize(new java.awt.Dimension(110, 25));
+        portToggle.setMinimumSize(new java.awt.Dimension(110, 25));
+        portToggle.setPreferredSize(new java.awt.Dimension(110, 25));
         portToggle.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 portToggleActionPerformed(evt);
@@ -208,6 +208,7 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
 
     private void portBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portBoxActionPerformed
         portName = (String)portBox.getSelectedItem();
+        portToggle.setEnabled( portBox.getSelectedIndex() >= 0);
     }//GEN-LAST:event_portBoxActionPerformed
 
     private void portBoxPopupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_portBoxPopupMenuWillBecomeVisible
@@ -217,7 +218,7 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
     private void portToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portToggleActionPerformed
         //only open valid port. portList[0]="select port" - not a valid port
         //if ((String)portBox.getSelectedItem() == portList[0]) {
-        if (portBox.getSelectedIndex() == 0) {//.getSelectedItem().equals(portList[0])) {
+        if (portBox.getSelectedIndex() < 0) {//.getSelectedItem().equals(portList[0])) {
             portToggle.setSelected(open);
             //JOptionPane.showMessageDialog(this, "Must Select Valid Port.", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -226,18 +227,18 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
             portToggle.setText("Connect");
             portBox.setEnabled(true);
             baudBox.setEnabled(true);
-                //close input stream
+            //close input stream
             if (inputStream != null) {
                 try { inputStream.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    System.out.println("error "+ex.getMessage());
                 }
             }
             //close output stream
             if (outputStream != null) {
                 try { outputStream.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    System.out.println("error "+ex.getMessage());
                 }
             }
             //close serial port
@@ -250,19 +251,19 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
 
             open=false;
         } else {//else port is closed, so open it
-            //portToggle.setText("Disconnect");
+            portToggle.setText("Disconnect");
             portBox.setEnabled(false);
             baudBox.setEnabled(false);
             try {
                 connect(portName);
             }
             catch ( Exception e ) {
-                e.printStackTrace();
+                System.out.println("error "+e.getMessage());
             }
             try {
                 serialPort.addEventListener(this);
             } catch (TooManyListenersException ex) {
-                ex.printStackTrace();
+                System.out.println("error "+ex.getMessage());
             }
             serialPort.notifyOnDataAvailable(true);
         }
@@ -270,7 +271,6 @@ public class SerialPanel extends javax.swing.JPanel implements SerialPortEventLi
     }//GEN-LAST:event_portToggleActionPerformed
 
     static int MAX_DATA = 1024;
-    private String[] tempPortList, portList; //list of ports for combobox dropdown
     private String portName;
     private CommPort commPort;
     private SerialPort serialPort;
