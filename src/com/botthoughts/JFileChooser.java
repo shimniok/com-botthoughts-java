@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import org.jdesktop.application.FrameView;
 
 /** Custom JFileChooser implementation adding a few features
  *
@@ -25,7 +24,7 @@ public class JFileChooser extends javax.swing.JFileChooser {
     private JFileFilter ff = null;
     /** the list of file filters to use */
     //TODO: remove ffList
-    private ArrayList ffList = new ArrayList();
+    private ArrayList<JFileFilter> ffList = new ArrayList<JFileFilter>();
     /** the directory of the selected file (deprecated) */
     //private String directory = null;
     /** the selected filename (deprecated) */
